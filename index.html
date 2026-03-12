@@ -752,7 +752,7 @@
           <div class="sender-name" style="color:#b5451b">Lukas</div>
           <div class="bubble">OK so Nina's birthday is Saturday. I
             <span class="gap-input-wrap">
-              <input class="gap-input" type="text" placeholder="already decided, not yet done?" data-answers="'m going to host,am going to host,going to host,'m going to have,am going to have,going to have" data-reason-type="going" data-reason="intention — plan already decided">
+              <input class="gap-input" type="text" placeholder="already decided, not yet done?" data-answers="'m going to host,am going to host,going to host,'m going to have,am going to have,going to have" data-reason-type="going" data-reason="intention — plan already decided" data-flexible="true">
               <button class="check-btn" onclick="checkInput(this)">✓</button>
               <span class="reason-label going"></span>
             </span>
@@ -768,7 +768,7 @@
           <div class="sender-name" style="color:#9b7fd4">Mia</div>
           <div class="bubble">Obviously. I
             <span class="gap-input-wrap">
-              <input class="gap-input" type="text" placeholder="spontaneous or planned?" data-answers="'ll bring,will bring" data-reason-type="will" data-reason="spontaneous offer">
+              <input class="gap-input" type="text" placeholder="spontaneous or planned?" data-answers="'ll bring,will bring" data-reason-type="will" data-reason="spontaneous offer" data-flexible="true">
               <button class="check-btn" onclick="checkInput(this)">✓</button>
               <span class="reason-label will"></span>
             </span>
@@ -784,7 +784,7 @@
           <div class="sender-name" style="color:#b07d1a">Tom</div>
           <div class="bubble">I can do decorations. I
             <span class="gap-input-wrap">
-              <input class="gap-input" type="text" placeholder="already chosen, not yet done?" data-answers="'m going to order,am going to order,going to order" data-reason-type="going" data-reason="intention — plan exists">
+              <input class="gap-input" type="text" placeholder="already chosen, not yet done?" data-answers="'m going to order,am going to order,going to order" data-reason-type="going" data-reason="intention — plan exists" data-flexible="true">
               <button class="check-btn" onclick="checkInput(this)">✓</button>
               <span class="reason-label going"></span>
             </span>
@@ -1131,8 +1131,13 @@
   // ── PHASE 1: INPUT CHECK ──
   function normalise(str) {
     return str.toLowerCase().trim()
-      .replace(/[\u2018\u2019]/g, "'")
+      .replace(/[\u2018\u2019\u2032]/g, "'")
       .replace(/\s+/g, ' ');
+  }
+
+  // Strip optional subject pronouns so "I'll bring" and "'ll bring" both work
+  function stripSubject(str) {
+    return str.replace(/^(i|you|he|she|it|we|they|jana|mia|tom|lukas|nina)\s+/i, '').trim();
   }
 
   const reasonLabels = {
@@ -1141,6 +1146,20 @@
     pp: 'pres. prog. — arranged'
   };
 
+  // Tense pattern detectors — verb-agnostic
+  // Each returns true if the stripped input matches the structure, regardless of which verb follows
+  const patterns = {
+    will:  /^('ll|will)\s+\w+/,
+    going: /^('m|am|is|are)\s+going\s+to\s+\w+/,
+    pp:    /^('m|am|is|are)\s+\w+ing(\s+\w+)*/,
+  };
+
+  // For gaps where only one specific verb is acceptable (e.g. "probably just stay"),
+  // fall back to the exact-match list in data-answers.
+  // For gaps where any verb is fine, data-answers can be left as a single
+  // representative form and the pattern matcher takes over.
+  // data-flexible="true" on the input opts into pattern-only matching.
+
   function checkInput(btn) {
     const wrap = btn.closest('.gap-input-wrap');
     const input = wrap.querySelector('.gap-input');
@@ -1148,8 +1167,20 @@
     const raw = normalise(input.value);
     if (!raw) return;
 
-    const accepted = input.dataset.answers.split(',').map(a => normalise(a));
-    const isCorrect = accepted.some(a => raw === a || raw.endsWith(a));
+    const stripped = stripSubject(raw);
+    const rType = input.dataset.reasonType;
+    const flexible = input.dataset.flexible === 'true';
+
+    let isCorrect = false;
+
+    if (flexible && rType && patterns[rType]) {
+      // Pattern match — any grammatically correct verb accepted
+      isCorrect = patterns[rType].test(stripped);
+    } else {
+      // Exact match against data-answers list
+      const accepted = input.dataset.answers.split(',').map(a => normalise(stripSubject(a)));
+      isCorrect = accepted.some(a => stripped === a || stripped.endsWith(a));
+    }
 
     input.classList.remove('correct', 'wrong');
 
@@ -1157,15 +1188,11 @@
       input.classList.add('correct');
       input.disabled = true;
       btn.disabled = true;
-      // Show reasoning label
-      const rType = input.dataset.reasonType;
       label.textContent = reasonLabels[rType] || input.dataset.reason;
       label.classList.add('visible');
     } else {
       input.classList.add('wrong');
-      setTimeout(() => {
-        input.classList.remove('wrong');
-      }, 1000);
+      setTimeout(() => input.classList.remove('wrong'), 1000);
     }
   }
 
