@@ -1,0 +1,1279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Party Chat — Future Tenses · 9a</title>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;800&family=Lora:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #1c1917;
+    --surface: #28251f;
+    --card: #312e27;
+    --border: #3d3a32;
+    --chat-bg-1: #f5f0e8;
+    --chat-bg-2: #e8f0f5;
+    --bubble-them: #ffffff;
+    --bubble-you: #1c1917;
+    --bubble-you-text: #f5f0e8;
+    --gold: #c9a84c;
+    --gold-dim: #5a4a20;
+    --red: #c0392b;
+    --teal: #2a7d6f;
+    --blue: #2563a8;
+    --ink: #1c1917;
+    --muted: #7a7060;
+    --light-muted: #a09888;
+    --correct: #2a7d6f;
+    --wrong: #c0392b;
+    --pending: #c9a84c;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: #f0ece4;
+    font-family: 'Lora', Georgia, serif;
+    min-height: 100vh;
+  }
+
+  /* ── HEADER ── */
+  .site-header {
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+    padding: 0 32px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 200;
+  }
+
+  .site-header h1 {
+    font-family: 'Unbounded', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #f0ece4;
+  }
+
+  .site-header h1 em { color: var(--gold); font-style: normal; }
+
+  .header-meta {
+    font-family: 'Unbounded', sans-serif;
+    font-size: 0.62rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  /* ── PHASE TABS ── */
+  .phase-tabs {
+    display: flex;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    position: sticky;
+    top: 60px;
+    z-index: 190;
+  }
+
+  .phase-tab {
+    flex: 1;
+    padding: 14px 24px;
+    border: none;
+    background: transparent;
+    color: var(--muted);
+    font-family: 'Unbounded', sans-serif;
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s;
+    border-bottom: 3px solid transparent;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 3px;
+  }
+
+  .phase-tab .tab-sub {
+    font-size: 0.58rem;
+    font-weight: 400;
+    letter-spacing: 0.05em;
+    color: var(--muted);
+    font-family: 'Lora', serif;
+    font-style: italic;
+  }
+
+  .phase-tab:hover { color: #f0ece4; }
+  .phase-tab.active { color: var(--gold); border-bottom-color: var(--gold); }
+  .phase-tab.active .tab-sub { color: var(--gold-dim); }
+
+  /* ── LAYOUT ── */
+  .main {
+    max-width: 1060px;
+    margin: 0 auto;
+    padding: 28px 20px;
+    display: grid;
+    grid-template-columns: 1fr 300px;
+    gap: 24px;
+    align-items: start;
+  }
+
+  /* ── CHAT WRAPPER ── */
+  .chat-wrapper {
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 8px 48px rgba(0,0,0,0.4);
+  }
+
+  .chat-topbar {
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .p1 .chat-topbar { background: #2d2a24; }
+  .p2 .chat-topbar { background: #1e2830; }
+
+  .group-icon {
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+  }
+
+  .p1 .group-icon { background: var(--gold); }
+  .p2 .group-icon { background: var(--red); }
+
+  .group-info strong {
+    display: block;
+    color: #f0ece4;
+    font-family: 'Unbounded', sans-serif;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+  }
+
+  .group-info span {
+    font-size: 0.68rem;
+    color: var(--light-muted);
+    font-family: 'Lora', serif;
+    font-style: italic;
+  }
+
+  .chat-body {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  .p1 .chat-body { background: var(--chat-bg-1); }
+  .p2 .chat-body { background: var(--chat-bg-2); }
+
+  /* ── BUBBLES ── */
+  .msg-row {
+    display: flex;
+    gap: 8px;
+    align-items: flex-end;
+    margin-bottom: 2px;
+  }
+
+  .msg-row.r { flex-direction: row-reverse; }
+
+  .av {
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Unbounded', sans-serif;
+    font-size: 0.6rem;
+    font-weight: 800;
+    color: #fff;
+    flex-shrink: 0;
+    margin-bottom: 16px;
+  }
+
+  .av-L { background: #b5451b; }
+  .av-M { background: #5b3fa0; }
+  .av-T { background: #b07d1a; }
+  .av-J { background: #1a7a6e; }
+
+  .msg-col {
+    display: flex;
+    flex-direction: column;
+    max-width: 80%;
+  }
+
+  .msg-row.r .msg-col { align-items: flex-end; }
+
+  .sender-name {
+    font-family: 'Unbounded', sans-serif;
+    font-size: 0.58rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: 3px;
+    padding: 0 6px;
+  }
+
+  .bubble {
+    padding: 10px 14px;
+    border-radius: 16px;
+    font-size: 0.88rem;
+    line-height: 1.65;
+    color: var(--ink);
+  }
+
+  .msg-row.l .bubble {
+    background: var(--bubble-them);
+    border-bottom-left-radius: 4px;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.1);
+  }
+
+  .msg-row.r .bubble {
+    background: var(--bubble-you);
+    color: var(--bubble-you-text);
+    border-bottom-right-radius: 4px;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.2);
+  }
+
+  .msg-time {
+    font-size: 0.62rem;
+    color: var(--muted);
+    padding: 2px 6px;
+    margin-top: 2px;
+  }
+
+  .reaction {
+    font-size: 0.72rem;
+    background: rgba(255,255,255,0.85);
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    padding: 1px 7px;
+    display: inline-block;
+    margin-top: 3px;
+    color: var(--ink);
+  }
+
+  .gap { height: 12px; }
+
+  /* ── TEXT INPUTS (Phase 1) ── */
+  .gap-input-wrap {
+    display: inline-flex;
+    align-items: center;
+    position: relative;
+    vertical-align: middle;
+    margin: 0 2px;
+    flex-wrap: wrap;
+    gap: 3px;
+  }
+
+  .gap-input {
+    font-family: 'Lora', serif;
+    font-size: 0.85rem;
+    font-weight: 500;
+    border: none;
+    border-bottom: 2px solid var(--pending);
+    background: transparent;
+    color: var(--ink);
+    padding: 1px 4px;
+    width: 155px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .msg-row.r .gap-input {
+    color: #f0ece4;
+    border-bottom-color: var(--gold);
+  }
+
+  .gap-input:focus { border-bottom-color: var(--blue); }
+
+  .gap-input.correct {
+    border-bottom-color: var(--correct);
+    color: var(--correct);
+    font-weight: 600;
+  }
+
+  .msg-row.r .gap-input.correct { color: #7fffd4; border-bottom-color: #7fffd4; }
+
+  .gap-input.wrong {
+    border-bottom-color: var(--wrong);
+    color: var(--wrong);
+  }
+
+  .check-btn {
+    font-family: 'Unbounded', sans-serif;
+    font-size: 0.58rem;
+    font-weight: 600;
+    background: var(--gold);
+    color: var(--ink);
+    border: none;
+    border-radius: 4px;
+    padding: 3px 7px;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+
+  .check-btn:hover { background: #e0bc60; }
+  .check-btn:disabled { opacity: 0; pointer-events: none; }
+
+  /* ── REASONING LABEL (appears after correct) ── */
+  .reason-label {
+    display: none;
+    font-family: 'Unbounded', sans-serif;
+    font-size: 0.56rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 2px 7px;
+    border-radius: 3px;
+    white-space: nowrap;
+    margin-left: 4px;
+  }
+
+  .reason-label.will { background: #3d1f1a; color: #e87060; }
+  .reason-label.going { background: #1a3028; color: #5ecfb8; }
+  .reason-label.pp { background: #1a2040; color: #7090e8; }
+
+  .msg-row.r .reason-label.will { background: rgba(232,112,96,0.2); }
+  .msg-row.r .reason-label.going { background: rgba(94,207,184,0.2); }
+  .msg-row.r .reason-label.pp { background: rgba(112,144,232,0.2); }
+
+  .reason-label.visible { display: inline-block; }
+
+  /* ── ERROR HUNT (Phase 2) ── */
+  .e-word {
+    cursor: pointer;
+    border-radius: 3px;
+    padding: 1px 3px;
+    transition: background 0.15s;
+    position: relative;
+    border-bottom: 1px dashed rgba(0,0,0,0.2);
+  }
+
+  .msg-row.r .e-word { border-bottom-color: rgba(255,255,255,0.25); }
+
+  .msg-row.l .e-word:hover { background: rgba(192,57,43,0.1); }
+  .msg-row.r .e-word:hover { background: rgba(201,168,76,0.2); }
+
+  .e-word.tapped { background: rgba(192,57,43,0.15); }
+
+  .e-word.confirmed-error {
+    background: var(--wrong);
+    color: #fff !important;
+    border-radius: 4px;
+    text-decoration: line-through;
+    border-bottom: none;
+    cursor: default;
+  }
+
+  /* ── PERSISTENT TOOLTIP ── */
+  .e-tooltip {
+    display: none;
+    position: absolute;
+    bottom: calc(100% + 10px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: #0f0e0c;
+    color: #f0ece4;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 0.78rem;
+    font-family: 'Lora', serif;
+    z-index: 300;
+    box-shadow: 0 6px 28px rgba(0,0,0,0.5);
+    border-left: 3px solid var(--gold);
+    width: 260px;
+    text-align: left;
+    line-height: 1.5;
+    cursor: auto;
+    pointer-events: all;
+  }
+
+  .e-tooltip::after {
+    content: '';
+    position: absolute;
+    top: 100%; left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-top-color: #0f0e0c;
+  }
+
+  .e-tooltip .tt-correct {
+    font-family: 'Unbounded', sans-serif;
+    font-size: 0.62rem;
+    font-weight: 600;
+    color: #5ecfb8;
+    display: block;
+    margin-bottom: 4px;
+    letter-spacing: 0.04em;
+  }
+
+  .e-tooltip .tt-why {
+    color: var(--light-muted);
+    font-style: italic;
+  }
+
+  .e-tooltip .tt-dismiss {
+    display: block;
+    margin-top: 8px;
+    font-family: 'Unbounded', sans-serif;
+    font-size: 0.55rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    cursor: pointer;
+    text-align: right;
+  }
+
+  .e-tooltip .tt-dismiss:hover { color: var(--gold); }
+
+  .e-word.confirmed-error .e-tooltip { display: block; }
+  .e-word.confirmed-error .e-tooltip.dismissed { display: none; }
+
+  /* ── SIDE PANEL ── */
+  .side {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    position: sticky;
+    top: 120px;
+  }
+
+  .side-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .side-card-head {
+    padding: 10px 16px;
+    background: var(--card);
+    font-family: 'Unbounded', sans-serif;
+    font-size: 0.63rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--gold);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .side-card-body { padding: 14px 16px; }
+
+  /* GRAMMAR STRIP */
+  .g-row {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.8rem;
+  }
+
+  .g-row:last-child { border-bottom: none; }
+
+  .g-tag {
+    font-family: 'Unbounded', sans-serif;
+    font-size: 0.56rem;
+    font-weight: 600;
+    padding: 3px 7px;
+    border-radius: 4px;
+    white-space: nowrap;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .g-will { background: #3d1f1a; color: #e87060; }
+  .g-going { background: #1a3028; color: #5ecfb8; }
+  .g-pp { background: #1a2040; color: #7090e8; }
+
+  .g-body { color: var(--light-muted); line-height: 1.5; }
+  .g-body strong { color: #f0ece4; display: block; font-size: 0.78rem; margin-bottom: 2px; }
+
+  /* INSTRUCTION */
+  .instruction {
+    font-size: 0.82rem;
+    color: var(--light-muted);
+    line-height: 1.65;
+    font-style: italic;
+  }
+
+  .instruction strong {
+    color: #f0ece4;
+    font-style: normal;
+    display: block;
+    margin-bottom: 6px;
+    font-family: 'Unbounded', sans-serif;
+    font-weight: 600;
+    font-size: 0.63rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .hint-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+    margin-top: 8px;
+    padding: 7px 10px;
+    background: var(--card);
+    border-radius: 6px;
+    font-size: 0.74rem;
+    color: var(--light-muted);
+    font-style: italic;
+    line-height: 1.4;
+  }
+
+  /* REVEAL BUTTON */
+  .reveal-btn {
+    width: 100%;
+    padding: 11px;
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: var(--light-muted);
+    font-family: 'Unbounded', sans-serif;
+    font-size: 0.62rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: all 0.2s;
+    margin-top: 10px;
+  }
+
+  .reveal-btn:hover { border-color: var(--gold); color: var(--gold); }
+
+  /* ERROR TALLY */
+  .error-tally {
+    font-family: 'Unbounded', sans-serif;
+    font-size: 0.62rem;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid var(--border);
+  }
+
+  .tally-num { color: #f0ece4; font-weight: 600; }
+
+  /* ── DISCUSSION PANEL (appears after all errors found) ── */
+  .discussion-panel {
+    display: none;
+    max-width: 1060px;
+    margin: 0 auto 40px;
+    padding: 0 20px;
+  }
+
+  .discussion-panel.visible { display: block; }
+
+  .disc-inner {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-top: 3px solid var(--gold);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .disc-header {
+    padding: 16px 24px;
+    background: var(--card);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .disc-header h2 {
+    font-family: 'Unbounded', sans-serif;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+
+  .disc-header p {
+    font-size: 0.8rem;
+    color: var(--light-muted);
+    font-style: italic;
+    margin-left: auto;
+  }
+
+  .disc-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0;
+  }
+
+  .disc-item {
+    padding: 18px 24px;
+    border-right: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    font-size: 0.85rem;
+    color: var(--light-muted);
+    line-height: 1.65;
+  }
+
+  .disc-item:nth-child(even) { border-right: none; }
+  .disc-item:nth-child(3),
+  .disc-item:nth-child(4) { border-bottom: none; }
+
+  .disc-item strong {
+    display: block;
+    font-family: 'Unbounded', sans-serif;
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 6px;
+  }
+
+  /* ── PRODUCTION PROMPT ── */
+  .prod-section {
+    border-top: 1px solid var(--border);
+    padding: 20px 24px 24px;
+  }
+
+  .prod-section h3 {
+    font-family: 'Unbounded', sans-serif;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 6px;
+  }
+
+  .prod-section .prod-intro {
+    font-size: 0.82rem;
+    color: var(--light-muted);
+    font-style: italic;
+    margin-bottom: 16px;
+    line-height: 1.6;
+  }
+
+  .prod-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+  }
+
+  .prod-item label {
+    display: block;
+    font-family: 'Unbounded', sans-serif;
+    font-size: 0.6rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--light-muted);
+    margin-bottom: 6px;
+  }
+
+  .prod-item label em {
+    color: var(--gold);
+    font-style: normal;
+  }
+
+  .prod-textarea {
+    width: 100%;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: #f0ece4;
+    font-family: 'Lora', serif;
+    font-size: 0.85rem;
+    line-height: 1.6;
+    padding: 10px 14px;
+    resize: vertical;
+    min-height: 80px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .prod-textarea:focus { border-color: var(--gold); }
+  .prod-textarea::placeholder { color: var(--muted); font-style: italic; }
+
+  @media (max-width: 680px) {
+    .main { grid-template-columns: 1fr; }
+    .side { position: static; }
+    .disc-grid { grid-template-columns: 1fr; }
+    .disc-item { border-right: none; }
+    .disc-item:nth-child(3) { border-bottom: 1px solid var(--border); }
+    .prod-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="site-header">
+  <h1>Future Tenses — <em>The Party Chat</em></h1>
+  <div class="header-meta">9a · B1/B2 · ~40 min</div>
+</div>
+
+<div class="phase-tabs">
+  <button class="phase-tab active" id="tab1" onclick="switchPhase(1)">
+    Phase 1 — Thursday
+    <span class="tab-sub">Fill the gaps · the plan takes shape</span>
+  </button>
+  <button class="phase-tab" id="tab2" onclick="switchPhase(2)">
+    Phase 2 — Saturday
+    <span class="tab-sub">Error hunt · everything goes wrong</span>
+  </button>
+</div>
+
+<!-- ════════════ PHASE 1 ════════════ -->
+<div class="main" id="panel1">
+
+  <div class="chat-wrapper p1">
+    <div class="chat-topbar">
+      <div class="group-icon">🎉</div>
+      <div class="group-info">
+        <strong>SURPRISE FOR NINA 🤫</strong>
+        <span>Lukas, Mia, Tom, Jana · Thursday 14:00</span>
+      </div>
+    </div>
+    <div class="chat-body">
+
+      <div class="msg-row l">
+        <div class="av av-L">L</div>
+        <div class="msg-col">
+          <div class="sender-name" style="color:#b5451b">Lukas</div>
+          <div class="bubble">OK so Nina's birthday is Saturday. I
+            <span class="gap-input-wrap">
+              <input class="gap-input" type="text" placeholder="before this message?" data-answers="'ve decided,i've decided,have decided" data-reason-type="going" data-reason="intention already made">
+              <button class="check-btn" onclick="checkInput(this)">✓</button>
+              <span class="reason-label going"></span>
+            </span>
+            — surprise dinner at mine. Who's in?
+          </div>
+          <div class="msg-time">14:01</div>
+        </div>
+      </div>
+
+      <div class="msg-row r">
+        <div class="av av-M">M</div>
+        <div class="msg-col">
+          <div class="sender-name" style="color:#9b7fd4">Mia</div>
+          <div class="bubble">Obviously. I
+            <span class="gap-input-wrap">
+              <input class="gap-input" type="text" placeholder="spontaneous or planned?" data-answers="'ll bring,will bring" data-reason-type="will" data-reason="spontaneous offer">
+              <button class="check-btn" onclick="checkInput(this)">✓</button>
+              <span class="reason-label will"></span>
+            </span>
+            dessert. Just decided 😂</div>
+          <div class="msg-time">14:02</div>
+          <div><span class="reaction">😂 3</span></div>
+        </div>
+      </div>
+
+      <div class="msg-row l">
+        <div class="av av-T">T</div>
+        <div class="msg-col">
+          <div class="sender-name" style="color:#b07d1a">Tom</div>
+          <div class="bubble">I can do decorations. I
+            <span class="gap-input-wrap">
+              <input class="gap-input" type="text" placeholder="already chosen, not yet done?" data-answers="'m going to order,am going to order,going to order" data-reason-type="going" data-reason="intention — plan exists">
+              <button class="check-btn" onclick="checkInput(this)">✓</button>
+              <span class="reason-label going"></span>
+            </span>
+            balloons online — already picked the ones I want.</div>
+          <div class="msg-time">14:03</div>
+        </div>
+      </div>
+
+      <div class="gap"></div>
+
+      <div class="msg-row l">
+        <div class="av av-T">T</div>
+        <div class="msg-col">
+          <div class="sender-name" style="color:#b07d1a">Tom</div>
+          <div class="bubble">Wait — just checked my calendar. I
+            <span class="gap-input-wrap">
+              <input class="gap-input" type="text" placeholder="in the diary, confirmed?" data-answers="'m meeting,am meeting" data-reason-type="pp" data-reason="fixed arrangement">
+              <button class="check-btn" onclick="checkInput(this)">✓</button>
+              <span class="reason-label pp"></span>
+            </span>
+            my cousin at the airport Saturday at 5. Already confirmed with him.</div>
+          <div class="msg-time">14:06</div>
+        </div>
+      </div>
+
+      <div class="msg-row r">
+        <div class="av av-M">M</div>
+        <div class="msg-col">
+          <div class="sender-name" style="color:#9b7fd4">Mia</div>
+          <div class="bubble">TOM 😩 what time does the flight land??</div>
+          <div class="msg-time">14:07</div>
+        </div>
+      </div>
+
+      <div class="msg-row l">
+        <div class="av av-T">T</div>
+        <div class="msg-col">
+          <div class="sender-name" style="color:#b07d1a">Tom</div>
+          <div class="bubble">4:40. But I
+            <span class="gap-input-wrap">
+              <input class="gap-input" type="text" placeholder="promise made right now?" data-answers="'ll be,will be" data-reason-type="will" data-reason="spontaneous promise">
+              <button class="check-btn" onclick="checkInput(this)">✓</button>
+              <span class="reason-label will"></span>
+            </span>
+            there by 7. I promise. Can we start at 7:30?</div>
+          <div class="msg-time">14:08</div>
+        </div>
+      </div>
+
+      <div class="msg-row l">
+        <div class="av av-L">L</div>
+        <div class="msg-col">
+          <div class="sender-name" style="color:#b5451b">Lukas</div>
+          <div class="bubble">Fine. 7:30. I
+            <span class="gap-input-wrap">
+              <input class="gap-input" type="text" placeholder="decided before typing this?" data-answers="'m going to tell,am going to tell,going to tell" data-reason-type="going" data-reason="intention — decision already made">
+              <button class="check-btn" onclick="checkInput(this)">✓</button>
+              <span class="reason-label going"></span>
+            </span>
+            everyone else the new time.</div>
+          <div class="msg-time">14:10</div>
+        </div>
+      </div>
+
+      <div class="gap"></div>
+
+      <div class="msg-row r">
+        <div class="av av-J">J</div>
+        <div class="msg-col">
+          <div class="sender-name" style="color:#1a9e8c">Jana</div>
+          <div class="bubble">GUYS. Nina just texted asking what I
+            <span class="gap-input-wrap">
+              <input class="gap-input" type="text" placeholder="asking about a plan?" data-answers="'m doing,am doing" data-reason-type="pp" data-reason="fixed arrangement (Nina assumes)">
+              <button class="check-btn" onclick="checkInput(this)">✓</button>
+              <span class="reason-label pp"></span>
+            </span>
+            Saturday night. What do I say???</div>
+          <div class="msg-time">16:45</div>
+        </div>
+      </div>
+
+      <div class="msg-row l">
+        <div class="av av-M">M</div>
+        <div class="msg-col">
+          <div class="sender-name" style="color:#9b7fd4">Mia</div>
+          <div class="bubble">Tell her you
+            <span class="gap-input-wrap">
+              <input class="gap-input" type="text" placeholder="needs to sound arranged?" data-answers="'re visiting,are visiting" data-reason-type="pp" data-reason="present progressive — sounds like a real fixed plan">
+              <button class="check-btn" onclick="checkInput(this)">✓</button>
+              <span class="reason-label pp"></span>
+            </span>
+            your aunt. Has to sound arranged, not made up on the spot.</div>
+          <div class="msg-time">16:46</div>
+        </div>
+      </div>
+
+      <div class="msg-row r">
+        <div class="av av-J">J</div>
+        <div class="msg-col">
+          <div class="sender-name" style="color:#1a9e8c">Jana</div>
+          <div class="bubble">OK sent it. She replied: "Oh cool, I
+            <span class="gap-input-wrap">
+              <input class="gap-input" type="text" placeholder="Nina decides as she types?" data-answers="'ll probably just stay,will probably just stay" data-reason-type="will" data-reason="spontaneous decision — Nina reacts in the moment">
+              <button class="check-btn" onclick="checkInput(this)">✓</button>
+              <span class="reason-label will"></span>
+            </span>
+            home then." SHE HAS NO IDEA 😭🎉</div>
+          <div class="msg-time">16:47</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- SIDE P1 -->
+  <div class="side">
+    <div class="side-card">
+      <div class="side-card-head">How to do this</div>
+      <div class="side-card-body">
+        <div class="instruction">
+          <strong>Instructions</strong>
+          Type the correct future form into each gap. Each placeholder question is a hint about the situation — use it to decide which tense fits. Press Enter or ✓ to check.
+        </div>
+        <div class="hint-row">💡 Contracted forms ('ll) and full forms (will) both accepted. Case doesn't matter.</div>
+        <button class="reveal-btn" onclick="revealPhase1()">Show all answers (teacher)</button>
+      </div>
+    </div>
+
+    <div class="side-card">
+      <div class="side-card-head">Quick Reference</div>
+      <div class="side-card-body">
+        <div class="g-row">
+          <span class="g-tag g-will">will</span>
+          <div class="g-body"><strong>Spontaneous decision · offer · prediction</strong>Decided at the moment of speaking.</div>
+        </div>
+        <div class="g-row">
+          <span class="g-tag g-going">going to</span>
+          <div class="g-body"><strong>Intention already decided · evidence-based prediction</strong>Plan or visible evidence exists already.</div>
+        </div>
+        <div class="g-row">
+          <span class="g-tag g-pp">pres. prog.</span>
+          <div class="g-body"><strong>Fixed arrangement</strong>Confirmed with someone; it's in the calendar.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /panel1 -->
+
+<!-- ════════════ PHASE 2 ════════════ -->
+<div class="main" id="panel2" style="display:none">
+
+  <div class="chat-wrapper p2">
+    <div class="chat-topbar">
+      <div class="group-icon">🚨</div>
+      <div class="group-info">
+        <strong>SURPRISE FOR NINA 🤫</strong>
+        <span>Saturday · things are going wrong</span>
+      </div>
+    </div>
+    <div class="chat-body">
+
+      <!-- MSG 1 — ERROR: 'll cook → 'm going to cook -->
+      <div class="msg-row l" data-msg-id="1">
+        <div class="av av-L">L</div>
+        <div class="msg-col">
+          <div class="sender-name" style="color:#b5451b">Lukas</div>
+          <div class="bubble">Caterer just cancelled. But it's fine — I
+            <span class="e-word" data-type="error" data-correct="'m going to cook" data-explain="Lukas already bought the ingredients and planned the menu — this is an intention backed by evidence, not a spontaneous reaction.">'ll cook</span>
+            everything myself. Already bought the ingredients, menu is planned.
+          </div>
+          <div class="msg-time">Sat 14:30</div>
+        </div>
+      </div>
+
+      <!-- MSG 2 — CLEAN -->
+      <div class="msg-row r" data-msg-id="2">
+        <div class="av av-M">M</div>
+        <div class="msg-col">
+          <div class="sender-name" style="color:#9b7fd4">Mia</div>
+          <div class="bubble">You're a hero Lukas. I'll pick up extra wine on my way — just decided. 🍷</div>
+          <div class="msg-time">Sat 14:32</div>
+        </div>
+      </div>
+
+      <!-- MSG 3 — ERROR: 'll arrive → 'm arriving -->
+      <div class="msg-row r" data-msg-id="3">
+        <div class="av av-M">M</div>
+        <div class="msg-col">
+          <div class="sender-name" style="color:#9b7fd4">Mia</div>
+          <div class="bubble">Also FYI — I
+            <span class="e-word" data-type="error" data-correct="'m arriving" data-explain="Mia has already booked the tram. This is a confirmed arrangement, not a prediction or spontaneous decision.">'ll arrive</span>
+            at 6:30. Tram is booked.
+          </div>
+          <div class="msg-time">Sat 14:33</div>
+        </div>
+      </div>
+
+      <div class="gap"></div>
+
+      <!-- MSG 4 — CLEAN -->
+      <div class="msg-row l" data-msg-id="4">
+        <div class="av av-T">T</div>
+        <div class="msg-col">
+          <div class="sender-name" style="color:#b07d1a">Tom</div>
+          <div class="bubble">Bad news. The flight is delayed. I'm watching the board — it's going to land at 18:15 now. I can see it changing live.</div>
+          <div class="msg-time">Sat 15:40</div>
+        </div>
+      </div>
+
+      <!-- MSG 5 — CLEAN -->
+      <div class="msg-row r" data-msg-id="5">
+        <div class="av av-J">J</div>
+        <div class="msg-col">
+          <div class="sender-name" style="color:#1a9e8c">Jana</div>
+          <div class="bubble">It's fine — I'll stall Nina at mine until 8. Just decided. 😅</div>
+          <div class="msg-time">Sat 15:42</div>
+        </div>
+      </div>
+
+      <div class="gap"></div>
+
+      <!-- MSG 6 — ERROR: 'll be → 's going to be -->
+      <div class="msg-row l" data-msg-id="6">
+        <div class="av av-L">L</div>
+        <div class="msg-col">
+          <div class="sender-name" style="color:#b5451b">Lukas</div>
+          <div class="bubble">Update: food smells incredible, balloons are up, flat looks amazing. Tonight
+            <span class="e-word" data-type="error" data-correct="'s going to be" data-explain="Lukas can see the evidence all around him. This is an evidence-based prediction, not a feeling — going to is the right call.">'ll be</span>
+            perfect. I can already see it.
+          </div>
+          <div class="msg-time">Sat 18:00</div>
+        </div>
+      </div>
+
+      <!-- MSG 7 — ERROR: 'm going to be → 'll be -->
+      <div class="msg-row l" data-msg-id="7">
+        <div class="av av-T">T</div>
+        <div class="msg-col">
+          <div class="sender-name" style="color:#b07d1a">Tom</div>
+          <div class="bubble">Just got in the taxi. I
+            <span class="e-word" data-type="error" data-correct="'ll be" data-explain="Tom is reacting in the moment — he just got in the cab and is making a spontaneous promise. No prior plan exists for this exact arrival time.">'m going to be</span>
+            there in 20 minutes — just jumped in a cab now!
+          </div>
+          <div class="msg-time">Sat 20:05</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- SIDE P2 -->
+  <div class="side">
+    <div class="side-card">
+      <div class="side-card-head">How to hunt errors</div>
+      <div class="side-card-body">
+        <div class="instruction">
+          <strong>Instructions</strong>
+          Some messages contain a future tense error. Some are completely correct. Read carefully — tap any future form you think is wrong. The tooltip stays open until you close it.
+        </div>
+        <div class="hint-row">⚠ Not every message has an error. Think before you tap.</div>
+        <div class="error-tally">Errors found: <span class="tally-num"><span id="error-count">0</span> / 4</span></div>
+        <button class="reveal-btn" onclick="revealPhase2()">Show all errors (teacher)</button>
+      </div>
+    </div>
+
+    <div class="side-card">
+      <div class="side-card-head">Quick Reference</div>
+      <div class="side-card-body">
+        <div class="g-row">
+          <span class="g-tag g-will">will</span>
+          <div class="g-body"><strong>Spontaneous decision · offer · prediction</strong>Decided at the moment of speaking.</div>
+        </div>
+        <div class="g-row">
+          <span class="g-tag g-going">going to</span>
+          <div class="g-body"><strong>Intention already decided · evidence-based prediction</strong>Plan or visible evidence exists already.</div>
+        </div>
+        <div class="g-row">
+          <span class="g-tag g-pp">pres. prog.</span>
+          <div class="g-body"><strong>Fixed arrangement</strong>Confirmed with someone; it's in the calendar.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /panel2 -->
+
+<!-- ════════════ DISCUSSION PANEL ════════════ -->
+<div class="discussion-panel" id="discussion-panel">
+  <div class="disc-inner">
+    <div class="disc-header">
+      <h2>All errors found — now discuss</h2>
+      <p>Use these questions to close the lesson</p>
+    </div>
+    <div class="disc-grid">
+      <div class="disc-item">
+        <strong>Message 2</strong>
+        Mia says "I'll pick up extra wine — <em>just decided</em>." Why does she add "just decided"? What would happen to the meaning without it?
+      </div>
+      <div class="disc-item">
+        <strong>Message 1</strong>
+        Lukas opens with "it's fine —" before announcing his plan. Does that framing make <em>'ll cook</em> sound more natural? Why does context make the wrong tense convincing?
+      </div>
+      <div class="disc-item">
+        <strong>Message 5 vs Message 7</strong>
+        Jana uses <em>will</em> for a spontaneous decision; Tom uses <em>going to</em> for a spontaneous promise. Both are errors in the same direction. Does pressure make you more likely to get this wrong? Why?
+      </div>
+      <div class="disc-item">
+        <strong>The hardest error</strong>
+        Which error in this chat was most convincing? What made it sound right even though it wasn't? What's the one question you can ask yourself to catch this type of mistake?
+      </div>
+    </div>
+
+    <div class="prod-section">
+      <h3>Now produce</h3>
+      <p class="prod-intro">Before the discussion: write Tom's last message correctly, then add one final message from any character to close the chat. Focus on getting the tense right and making it feel natural.</p>
+      <div class="prod-grid">
+        <div class="prod-item">
+          <label>Tom's message — <em>corrected</em></label>
+          <textarea class="prod-textarea" placeholder="Just got in the taxi. I ____ there in 20 minutes…"></textarea>
+        </div>
+        <div class="prod-item">
+          <label>One final message — <em>any character</em></label>
+          <textarea class="prod-textarea" placeholder="Choose Lukas, Mia, Jana, or Nina herself. Make the tense choice count."></textarea>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  // ── PHASE SWITCHING ──
+  function switchPhase(n) {
+    document.getElementById('panel1').style.display = n === 1 ? 'grid' : 'none';
+    document.getElementById('panel2').style.display = n === 2 ? 'grid' : 'none';
+    document.getElementById('tab1').classList.toggle('active', n === 1);
+    document.getElementById('tab2').classList.toggle('active', n === 2);
+    if (n === 2) {
+      document.getElementById('discussion-panel').style.display = 'none';
+    }
+  }
+
+  // ── PHASE 1: INPUT CHECK ──
+  function normalise(str) {
+    return str.toLowerCase().trim()
+      .replace(/[\u2018\u2019]/g, "'")
+      .replace(/\s+/g, ' ');
+  }
+
+  const reasonLabels = {
+    will: 'will — spontaneous',
+    going: 'going to — intention/evidence',
+    pp: 'pres. prog. — arranged'
+  };
+
+  function checkInput(btn) {
+    const wrap = btn.closest('.gap-input-wrap');
+    const input = wrap.querySelector('.gap-input');
+    const label = wrap.querySelector('.reason-label');
+    const raw = normalise(input.value);
+    if (!raw) return;
+
+    const accepted = input.dataset.answers.split(',').map(a => normalise(a));
+    const isCorrect = accepted.some(a => raw === a || raw.endsWith(a));
+
+    input.classList.remove('correct', 'wrong');
+
+    if (isCorrect) {
+      input.classList.add('correct');
+      input.disabled = true;
+      btn.disabled = true;
+      // Show reasoning label
+      const rType = input.dataset.reasonType;
+      label.textContent = reasonLabels[rType] || input.dataset.reason;
+      label.classList.add('visible');
+    } else {
+      input.classList.add('wrong');
+      setTimeout(() => {
+        input.classList.remove('wrong');
+      }, 1000);
+    }
+  }
+
+  document.querySelectorAll('.gap-input').forEach(inp => {
+    inp.addEventListener('keydown', e => {
+      if (e.key === 'Enter') {
+        checkInput(inp.closest('.gap-input-wrap').querySelector('.check-btn'));
+      }
+    });
+  });
+
+  function revealPhase1() {
+    document.querySelectorAll('.gap-input').forEach(inp => {
+      if (inp.disabled) return;
+      const answers = inp.dataset.answers.split(',');
+      inp.value = answers[0];
+      inp.classList.add('correct');
+      inp.disabled = true;
+      const wrap = inp.closest('.gap-input-wrap');
+      const btn = wrap.querySelector('.check-btn');
+      if (btn) btn.disabled = true;
+      const label = wrap.querySelector('.reason-label');
+      if (label) {
+        const rType = inp.dataset.reasonType;
+        label.textContent = reasonLabels[rType] || inp.dataset.reason;
+        label.classList.add('visible');
+      }
+    });
+  }
+
+  // ── PHASE 2: ERROR HUNT ──
+  let errorsFound = 0;
+  const totalErrors = 4;
+  const foundSet = new Set();
+
+  document.querySelectorAll('.e-word').forEach(word => {
+    word.addEventListener('click', function(e) {
+      e.stopPropagation();
+      if (this.classList.contains('confirmed-error')) return;
+
+      const isError = this.dataset.type === 'error';
+      const msgId = this.closest('[data-msg-id]').dataset.msgId;
+
+      if (isError) {
+        this.classList.add('confirmed-error');
+
+        // Build persistent tooltip
+        const tt = document.createElement('div');
+        tt.className = 'e-tooltip';
+        tt.innerHTML = `
+          <span class="tt-correct">✓ Should be: ${this.dataset.correct}</span>
+          <span class="tt-why">${this.dataset.explain}</span>
+          <span class="tt-dismiss" onclick="dismissTooltip(this)">tap to close ×</span>
+        `;
+        this.appendChild(tt);
+
+        if (!foundSet.has(msgId)) {
+          foundSet.add(msgId);
+          errorsFound++;
+          document.getElementById('error-count').textContent = errorsFound;
+        }
+
+        // Show discussion panel when all found
+        if (errorsFound === totalErrors) {
+          setTimeout(() => {
+            const dp = document.getElementById('discussion-panel');
+            dp.classList.add('visible');
+            dp.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }, 600);
+        }
+      } else {
+        this.classList.add('tapped');
+        setTimeout(() => this.classList.remove('tapped'), 700);
+      }
+    });
+  });
+
+  function dismissTooltip(el) {
+    el.closest('.e-tooltip').classList.add('dismissed');
+  }
+
+  function revealPhase2() {
+    document.querySelectorAll('.e-word[data-type="error"]').forEach(word => {
+      if (word.classList.contains('confirmed-error')) return;
+      word.classList.add('confirmed-error');
+
+      const tt = document.createElement('div');
+      tt.className = 'e-tooltip';
+      tt.innerHTML = `
+        <span class="tt-correct">✓ Should be: ${word.dataset.correct}</span>
+        <span class="tt-why">${word.dataset.explain}</span>
+        <span class="tt-dismiss" onclick="dismissTooltip(this)">tap to close ×</span>
+      `;
+      word.appendChild(tt);
+
+      const msgId = word.closest('[data-msg-id]').dataset.msgId;
+      if (!foundSet.has(msgId)) {
+        foundSet.add(msgId);
+        errorsFound++;
+      }
+    });
+
+    document.getElementById('error-count').textContent = totalErrors;
+
+    const dp = document.getElementById('discussion-panel');
+    dp.classList.add('visible');
+    setTimeout(() => dp.scrollIntoView({ behavior: 'smooth', block: 'start' }), 300);
+  }
+</script>
+</body>
+</html>
